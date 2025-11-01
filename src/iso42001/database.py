@@ -348,6 +348,39 @@ class ISO42001Database:
         conn.close()
         return df
     
+    def update_incident(self, incident_id: int, **kwargs) -> bool:
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Build dynamic update query
+        fields = []
+        values = []
+        for key, value in kwargs.items():
+            if key in ['incident_title', 'incident_description', 'severity', 'affected_assets', 
+                      'root_cause', 'corrective_actions', 'status', 'reported_by', 'assigned_to']:
+                fields.append(f"{key} = ?")
+                values.append(value)
+        
+        if fields:
+            fields.append("updated_date = ?")
+            values.append(datetime.now())
+            values.append(incident_id)
+            
+            query = f"UPDATE incidents SET {', '.join(fields)} WHERE id = ?"
+            cursor.execute(query, values)
+            conn.commit()
+        
+        conn.close()
+        return True
+    
+    def delete_incident(self, incident_id: int) -> bool:
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM incidents WHERE id = ?", (incident_id,))
+        conn.commit()
+        conn.close()
+        return True
+    
     # Audit CRUD operations
     def add_audit(self, audit_title: str, audit_type: str = "Internal", audit_scope: str = "",
                  auditor: str = "", findings: str = "", recommendations: str = "",
@@ -370,6 +403,39 @@ class ISO42001Database:
         df = pd.read_sql_query("SELECT * FROM audits ORDER BY created_date DESC", conn)
         conn.close()
         return df
+    
+    def update_audit(self, audit_id: int, **kwargs) -> bool:
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Build dynamic update query
+        fields = []
+        values = []
+        for key, value in kwargs.items():
+            if key in ['audit_title', 'audit_type', 'audit_scope', 'auditor', 
+                      'findings', 'recommendations', 'compliance_score', 'status']:
+                fields.append(f"{key} = ?")
+                values.append(value)
+        
+        if fields:
+            fields.append("updated_date = ?")
+            values.append(datetime.now())
+            values.append(audit_id)
+            
+            query = f"UPDATE audits SET {', '.join(fields)} WHERE id = ?"
+            cursor.execute(query, values)
+            conn.commit()
+        
+        conn.close()
+        return True
+    
+    def delete_audit(self, audit_id: int) -> bool:
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM audits WHERE id = ?", (audit_id,))
+        conn.commit()
+        conn.close()
+        return True
     
     # Database export/import functions
     def export_database(self, export_path: str) -> bool:

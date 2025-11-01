@@ -1,4 +1,5 @@
 from dash import callback, Input, Output, State, html, ctx
+from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from datetime import datetime
 import base64
@@ -377,18 +378,57 @@ def save_control(n_clicks, control_id, name, description, control_type,
 
 # Incident callbacks
 @callback(
-    Output("incident-modal", "is_open", allow_duplicate=True),
-    [Input("add-incident-btn", "n_clicks"), 
-     Input("submit-incident", "n_clicks"), 
+    [Output("incident-modal", "is_open", allow_duplicate=True),
+     Output("incident-modal-title", "children", allow_duplicate=True),
+     Output("edit-incident-id", "data", allow_duplicate=True),
+     Output("incident-title", "value", allow_duplicate=True),
+     Output("incident-description", "value", allow_duplicate=True),
+     Output("incident-severity", "value", allow_duplicate=True),
+     Output("incident-assets", "value", allow_duplicate=True),
+     Output("incident-root-cause", "value", allow_duplicate=True),
+     Output("incident-actions", "value", allow_duplicate=True),
+     Output("incident-status", "value", allow_duplicate=True),
+     Output("incident-reported-by", "value", allow_duplicate=True),
+     Output("incident-assigned-to", "value", allow_duplicate=True)],
+    [Input("add-incident-btn", "n_clicks"),
+     Input("incidents-table", "active_cell"),
      Input("cancel-incident", "n_clicks")],
-    [State("incident-modal", "is_open")],
+    [State("incident-modal", "is_open"),
+     State("incidents-table", "data")],
     prevent_initial_call=True
 )
-def toggle_incident_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
-    """Toggle incident modal visibility"""
-    if ctx.triggered_id in ["add-incident-btn", "submit-incident", "cancel-incident"]:
-        return not is_open
-    return False
+def handle_incident_modal(add_clicks, active_cell, cancel_clicks, is_open, table_data):
+    """Handle opening incident modal for add/edit and closing"""
+    triggered_id = ctx.triggered_id
+    
+    if triggered_id == "add-incident-btn":
+        # Open modal for adding new incident
+        return (True, "Add New Incident", None, "", "", "Medium", "", "", "", "Open", "", "")
+    
+    elif triggered_id == "incidents-table" and active_cell:
+        # Check if Edit button was clicked
+        if active_cell['column_id'] == 'edit':
+            row_data = table_data[active_cell['row']]
+            incident_id = row_data['id']
+            
+            # Open modal for editing with existing data
+            return (True, "Edit Incident", incident_id,
+                   row_data.get('incident_title', ''),
+                   row_data.get('incident_description', ''),
+                   row_data.get('severity', 'Medium'),
+                   row_data.get('affected_assets', ''),
+                   row_data.get('root_cause', ''),
+                   row_data.get('corrective_actions', ''),
+                   row_data.get('status', 'Open'),
+                   row_data.get('reported_by', ''),
+                   row_data.get('assigned_to', ''))
+    
+    elif triggered_id == "cancel-incident":
+        # Close modal and clear form
+        return (False, "Add New Incident", None, "", "", "Medium", "", "", "", "Open", "", "")
+    
+    # Default: return current state
+    return (is_open, "Add New Incident", None, "", "", "Medium", "", "", "", "Open", "", "")
 
 @callback(
     [Output("incidents-table-container", "children", allow_duplicate=True),
@@ -401,7 +441,8 @@ def toggle_incident_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
      Output("incident-status", "value", allow_duplicate=True),
      Output("incident-reported-by", "value", allow_duplicate=True),
      Output("incident-assigned-to", "value", allow_duplicate=True),
-     Output("incident-modal", "is_open", allow_duplicate=True)],
+     Output("incident-modal", "is_open", allow_duplicate=True),
+     Output("edit-incident-id", "data", allow_duplicate=True)],
     [Input("submit-incident", "n_clicks")],
     [State("incident-title", "value"),
      State("incident-description", "value"),
@@ -411,52 +452,57 @@ def toggle_incident_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
      State("incident-actions", "value"),
      State("incident-status", "value"),
      State("incident-reported-by", "value"),
-     State("incident-assigned-to", "value")],
+     State("incident-assigned-to", "value"),
+     State("edit-incident-id", "data")],
     prevent_initial_call=True
 )
-def add_incident(n_clicks, title, description, severity, assets, root_cause, 
-                actions, status, reported_by, assigned_to):
-    """Add new incident and refresh table"""
+def save_incident(n_clicks, title, description, severity, assets, root_cause, 
+                actions, status, reported_by, assigned_to, edit_incident_id):
+    """Add new incident or update existing incident and refresh table"""
     if n_clicks and title:
         try:
-            db.add_incident(title, description or "", severity or "Medium", assets or "",
-                           root_cause or "", actions or "", status or "Open", 
-                           reported_by or "", assigned_to or "")
+            if edit_incident_id:
+                # Update existing incident
+                db.update_incident(
+                    edit_incident_id,
+                    incident_title=title,
+                    incident_description=description or "",
+                    severity=severity or "Medium",
+                    affected_assets=assets or "",
+                    root_cause=root_cause or "",
+                    corrective_actions=actions or "",
+                    status=status or "Open",
+                    reported_by=reported_by or "",
+                    assigned_to=assigned_to or ""
+                )
+            else:
+                # Add new incident
+                db.add_incident(title, description or "", severity or "Medium", assets or "",
+                               root_cause or "", actions or "", status or "Open", 
+                               reported_by or "", assigned_to or "")
             
             # Refresh table
             incidents_df = db.get_incidents()
             table = create_data_table(incidents_df, "incidents-table")
             
             # Clear form and close modal
-            return table, "", "", "Medium", "", "", "", "Open", "", "", False
+            return table, "", "", "Medium", "", "", "", "Open", "", "", False, None
         except Exception as e:
-            print(f"Error adding incident: {e}")
+            print(f"Error saving incident: {e}")
     
     # Return current state
     try:
         incidents_df = db.get_incidents()
         table = create_data_table(incidents_df, "incidents-table")
-        return table, "", "", "Medium", "", "", "", "Open", "", "", False
+        return table, "", "", "Medium", "", "", "", "Open", "", "", False, None
     except:
-        return html.Div("Error loading incidents"), "", "", "Medium", "", "", "", "Open", "", "", False
+        return html.Div("Error loading incidents"), "", "", "Medium", "", "", "", "Open", "", "", False, None
 
 # Audit callbacks
 @callback(
-    Output("audit-modal", "is_open", allow_duplicate=True),
-    [Input("add-audit-btn", "n_clicks"), 
-     Input("submit-audit", "n_clicks"), 
-     Input("cancel-audit", "n_clicks")],
-    [State("audit-modal", "is_open")],
-    prevent_initial_call=True
-)
-def toggle_audit_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
-    """Toggle audit modal visibility"""
-    if ctx.triggered_id in ["add-audit-btn", "submit-audit", "cancel-audit"]:
-        return not is_open
-    return False
-
-@callback(
-    [Output("audits-table-container", "children", allow_duplicate=True),
+    [Output("audit-modal", "is_open", allow_duplicate=True),
+     Output("audit-modal-title", "children", allow_duplicate=True),
+     Output("edit-audit-id", "data", allow_duplicate=True),
      Output("audit-title", "value", allow_duplicate=True),
      Output("audit-type", "value", allow_duplicate=True),
      Output("audit-scope", "value", allow_duplicate=True),
@@ -464,9 +510,50 @@ def toggle_audit_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
      Output("audit-findings", "value", allow_duplicate=True),
      Output("audit-recommendations", "value", allow_duplicate=True),
      Output("audit-score", "value", allow_duplicate=True),
-     Output("audit-status", "value", allow_duplicate=True),
+     Output("audit-status", "value", allow_duplicate=True)],
+    [Input("add-audit-btn", "n_clicks"),
+     Input("audits-table", "active_cell"),
+     Input("cancel-audit", "n_clicks")],
+    [State("audit-modal", "is_open"),
+     State("audits-table", "data")],
+    prevent_initial_call=True
+)
+def handle_audit_modal(add_clicks, active_cell, cancel_clicks, is_open, table_data):
+    """Handle opening audit modal for add/edit and closing"""
+    triggered_id = ctx.triggered_id
+    
+    if triggered_id == "add-audit-btn":
+        # Open modal for adding new audit
+        return (True, "Add New Audit", None, "", "Internal", "", "", "", "", 0, "Planned")
+    
+    elif triggered_id == "audits-table" and active_cell:
+        # Check if Edit button was clicked
+        if active_cell['column_id'] == 'edit':
+            row_data = table_data[active_cell['row']]
+            audit_id = row_data['id']
+            
+            # Open modal for editing with existing data
+            return (True, "Edit Audit", audit_id,
+                   row_data.get('audit_title', ''),
+                   row_data.get('audit_type', 'Internal'),
+                   row_data.get('audit_scope', ''),
+                   row_data.get('auditor', ''),
+                   row_data.get('findings', ''),
+                   row_data.get('recommendations', ''),
+                   row_data.get('compliance_score', 0),
+                   row_data.get('status', 'Planned'))
+    
+    elif triggered_id == "cancel-audit":
+        # Close modal and clear form
+        return (False, "Add New Audit", None, "", "Internal", "", "", "", "", 0, "Planned")
+    
+    # Default: return current state
+    return (is_open, "Add New Audit", None, "", "Internal", "", "", "", "", 0, "Planned")
+
+@callback(
+    [Output("audits-table", "data", allow_duplicate=True),
      Output("audit-modal", "is_open", allow_duplicate=True)],
-    [Input("submit-audit", "n_clicks")],
+    Input("submit-audit", "n_clicks"),
     [State("audit-title", "value"),
      State("audit-type", "value"),
      State("audit-scope", "value"),
@@ -474,33 +561,53 @@ def toggle_audit_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
      State("audit-findings", "value"),
      State("audit-recommendations", "value"),
      State("audit-score", "value"),
-     State("audit-status", "value")],
+     State("audit-status", "value"),
+     State("edit-audit-id", "data")],
     prevent_initial_call=True
 )
-def add_audit(n_clicks, title, audit_type, scope, auditor, findings, 
-             recommendations, score, status):
-    """Add new audit and refresh table"""
-    if n_clicks and title:
-        try:
-            db.add_audit(title, audit_type or "Internal", scope or "", auditor or "",
-                        findings or "", recommendations or "", score or 0, status or "Planned")
-            
-            # Refresh table
-            audits_df = db.get_audits()
-            table = create_data_table(audits_df, "audits-table")
-            
-            # Clear form and close modal
-            return table, "", "Internal", "", "", "", "", 0, "Planned", False
-        except Exception as e:
-            print(f"Error adding audit: {e}")
+def save_audit(n_clicks, title, audit_type, scope, auditor, findings, recommendations, score, status, edit_id):
+    """Handle audit form submission for add or edit"""
+    if n_clicks is None:
+        raise PreventUpdate
     
-    # Return current state
-    try:
-        audits_df = db.get_audits()
-        table = create_data_table(audits_df, "audits-table")
-        return table, "", "Internal", "", "", "", "", 0, "Planned", False
-    except:
-        return html.Div("Error loading audits"), "", "Internal", "", "", "", "", 0, "Planned", False
+    db = ISO42001Database()
+    
+    if edit_id:
+        # Update existing audit
+        db.update_audit(
+            edit_id,
+            audit_title=title,
+            audit_type=audit_type,
+            audit_scope=scope,
+            auditor=auditor,
+            findings=findings,
+            recommendations=recommendations,
+            compliance_score=score,
+            status=status
+        )
+    else:
+        # Add new audit
+        db.add_audit(title, audit_type, scope, auditor, findings, recommendations, score, status)
+    
+    # Refresh table data
+    audits_df = db.get_audits()
+    table_data = []
+    for _, audit in audits_df.iterrows():
+        table_data.append({
+            'id': audit['id'],
+            'audit_title': audit['audit_title'],
+            'audit_type': audit['audit_type'],
+            'audit_scope': audit['audit_scope'],
+            'auditor': audit['auditor'],
+            'findings': audit['findings'],
+            'recommendations': audit['recommendations'],
+            'compliance_score': audit['compliance_score'],
+            'status': audit['status'],
+            'created_at': audit['created_at'],
+            'edit': 'Edit'
+        })
+    
+    return table_data, False
 
 # Admin callbacks
 @callback(

@@ -129,7 +129,7 @@ def create_data_table(df, table_id):
     
     # Add edit column for editable tables
     columns = []
-    if table_id in ["assets-table", "risks-table", "controls-table"] and not df.empty:
+    if table_id in ["assets-table", "risks-table", "controls-table", "incidents-table", "audits-table"] and not df.empty:
         # Add edit buttons to data
         df_copy = df.copy()
         df_copy['edit'] = "Edit"  # Simple text for now, will be handled by callback
@@ -364,10 +364,12 @@ def render_incidents_tab():
             ], width=4)
         ], className="mb-4"),
         
-        # Add incident modal
+        # Add/Edit incident modal
         dbc.Modal([
-            dbc.ModalHeader(dbc.ModalTitle("Add New Incident")),
+            dbc.ModalHeader(dbc.ModalTitle(id="incident-modal-title")),
             dbc.ModalBody([
+                # Hidden field to store incident ID for editing
+                dcc.Store(id="edit-incident-id", data=None),
                 create_form_input("Incident Title", "incident-title"),
                 create_form_input("Incident Description", "incident-description", "textarea"),
                 create_form_input("Severity", "incident-severity", "dropdown",
@@ -382,7 +384,7 @@ def render_incidents_tab():
             ]),
             dbc.ModalFooter([
                 dbc.Button("Cancel", id="cancel-incident", className="ms-auto", n_clicks=0),
-                dbc.Button("Add Incident", id="submit-incident", color="primary", className="ms-2", n_clicks=0)
+                dbc.Button("Save Incident", id="submit-incident", color="primary", className="ms-2", n_clicks=0)
             ])
         ], id="incident-modal", is_open=False),
         
@@ -407,10 +409,12 @@ def render_compliance_tab():
             ], width=4)
         ], className="mb-4"),
         
-        # Add audit modal
+        # Add/Edit audit modal
         dbc.Modal([
-            dbc.ModalHeader(dbc.ModalTitle("Add New Audit")),
+            dbc.ModalHeader(dbc.ModalTitle(id="audit-modal-title")),
             dbc.ModalBody([
+                # Hidden field to store audit ID for editing
+                dcc.Store(id="edit-audit-id", data=None),
                 create_form_input("Audit Title", "audit-title"),
                 create_form_input("Audit Type", "audit-type", "dropdown",
                                 ["Internal", "External", "Self Assessment"]),
@@ -424,7 +428,7 @@ def render_compliance_tab():
             ]),
             dbc.ModalFooter([
                 dbc.Button("Cancel", id="cancel-audit", className="ms-auto", n_clicks=0),
-                dbc.Button("Add Audit", id="submit-audit", color="primary", className="ms-2", n_clicks=0)
+                dbc.Button("Save Audit", id="submit-audit", color="primary", className="ms-2", n_clicks=0)
             ])
         ], id="audit-modal", is_open=False),
         
@@ -620,6 +624,8 @@ def create_app_layout():
             dbc.Button(id="add-incident-btn", style={'display': 'none'}),
             dbc.Button(id="submit-incident", style={'display': 'none'}),
             dbc.Button(id="cancel-incident", style={'display': 'none'}),
+            dcc.Store(id="edit-incident-id"),
+            html.H4(id="incident-modal-title", style={'display': 'none'}),
             
             # Audit placeholders
             html.Div(id="audits-table-container", style={'display': 'none'}),
@@ -635,6 +641,8 @@ def create_app_layout():
             dbc.Button(id="add-audit-btn", style={'display': 'none'}),
             dbc.Button(id="submit-audit", style={'display': 'none'}),
             dbc.Button(id="cancel-audit", style={'display': 'none'}),
+            dcc.Store(id="edit-audit-id"),
+            html.H4(id="audit-modal-title", style={'display': 'none'}),
             
             # Admin placeholders
             html.Div(id="export-status", style={'display': 'none'}),
