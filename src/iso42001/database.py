@@ -7,12 +7,30 @@ from typing import List, Dict, Optional, Any, Union
 class ISO42001Database:
     def __init__(self, db_path: Optional[str] = None):
         if db_path is None:
-            # Default to data directory relative to package root
-            import os
-            package_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-            db_path = os.path.join(package_root, "data", "iso42001.db")
+            db_path = self._get_default_db_path()
         self.db_path = db_path
         self.init_database()
+    
+    def _get_default_db_path(self) -> str:
+        """Get the default database path, handling PyInstaller bundles"""
+        import os
+        import sys
+        
+        # Check if running in PyInstaller bundle
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            # Running in PyInstaller bundle - use current working directory
+            app_dir = os.getcwd()
+            db_path = os.path.join(app_dir, "iso42001.db")
+        else:
+            # Running normally - use data directory relative to package root
+            package_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            data_dir = os.path.join(package_root, "data")
+            
+            # Create data directory if it doesn't exist
+            os.makedirs(data_dir, exist_ok=True)
+            db_path = os.path.join(data_dir, "iso42001.db")
+        
+        return db_path
     
     def get_connection(self):
         """Get database connection with foreign key support"""

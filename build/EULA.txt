@@ -1,0 +1,167 @@
+END USER LICENSE AGREEMENT (EULA)
+ISO 42001 AI Management System
+
+Copyright © 2025 Gressling Consulting GmbH & Paramus Transform LLC
+
+================================================================================
+
+IMPORTANT - READ CAREFULLY: This End User License Agreement ("EULA") is a legal 
+agreement between you (either an individual or a single entity) and Gressling 
+Consulting GmbH for the ISO 42001 AI Management System software product, which 
+includes computer software and may include associated media, printed materials, 
+and "online" or electronic documentation ("Software").
+
+By installing, copying, or otherwise using the Software, you agree to be bound 
+by the terms of this EULA. If you do not agree to the terms of this EULA, do 
+not install or use the Software.
+
+================================================================================
+
+1. LICENSOR INFORMATION
+
+Gressling Consulting GmbH
+Am Glunzbusch 9
+15741 Bestensee
+Brandenburg, Deutschland
+Telefon: +49 172 5328003
+E-Mail: mail@gressling.com
+
+In partnership with:
+Paramus Transform LLC
+United States of America
+
+================================================================================
+
+2. CREATIVE COMMONS LICENSE
+
+This Software is licensed under the Creative Commons Attribution-NonCommercial-
+ShareAlike 4.0 International License (CC BY-NC-SA 4.0).
+
+You are free to:
+• Share — copy and redistribute the material in any medium or format
+• Adapt — remix, transform, and build upon the material
+
+Under the following terms:
+• Attribution — You must give appropriate credit, provide a link to the license,
+  and indicate if changes were made. You may do so in any reasonable manner, but
+  not in any way that suggests the licensor endorses you or your use.
+• NonCommercial — You may not use the material for commercial purposes.
+• ShareAlike — If you remix, transform, or build upon the material, you must 
+  distribute your contributions under the same license as the original.
+
+Full license text: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+================================================================================
+
+3. PERMITTED USES
+
+You may:
+• Install and use the Software for internal business purposes
+• Make backup copies for archival purposes
+• Use the Software for ISO 42001 compliance and AI management activities
+• Modify the Software in accordance with the Creative Commons license terms
+• Distribute modified versions under the same license terms
+
+================================================================================
+
+4. RESTRICTIONS
+
+You may NOT:
+• Use the Software for commercial purposes without explicit written permission
+• Remove or alter any copyright, trademark, or license notices
+• Reverse engineer, decompile, or disassemble the Software except as permitted 
+  by applicable law
+• Distribute the Software without proper attribution
+• Use the Software in violation of applicable laws or regulations
+
+================================================================================
+
+5. DISCLAIMER OF WARRANTIES
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS 
+OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+GRESSLING CONSULTING GMBH AND PARAMUS TRANSFORM LLC DO NOT WARRANT THAT:
+• The Software will meet your specific requirements
+• The operation of the Software will be uninterrupted or error-free
+• All errors in the Software will be corrected
+• The Software will be compatible with all hardware and software configurations
+
+================================================================================
+
+6. LIMITATION OF LIABILITY
+
+IN NO EVENT SHALL GRESSLING CONSULTING GMBH, PARAMUS TRANSFORM LLC, OR THEIR 
+SUPPLIERS BE LIABLE FOR ANY DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, 
+DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS OF BUSINESS 
+INFORMATION, OR ANY OTHER PECUNIARY LOSS) ARISING OUT OF THE USE OF OR INABILITY 
+TO USE THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OR LIMITATION OF LIABILITY FOR 
+CONSEQUENTIAL OR INCIDENTAL DAMAGES, SO THE ABOVE LIMITATION MAY NOT APPLY TO YOU.
+
+================================================================================
+
+7. DATA AND PRIVACY
+
+• The Software processes data locally on your system
+• No data is transmitted to external servers without your explicit consent
+• You are responsible for the security and backup of your data
+• The Software may create local database files for data storage
+
+================================================================================
+
+8. COMPLIANCE
+
+This Software is designed to assist with ISO 42001 compliance but does not 
+guarantee compliance. Users are responsible for ensuring their use of the 
+Software meets all applicable regulatory requirements.
+
+================================================================================
+
+9. TERMINATION
+
+This license is effective until terminated. Your rights under this license will 
+terminate automatically without notice if you fail to comply with any term of 
+this EULA. Upon termination, you must destroy all copies of the Software.
+
+================================================================================
+
+10. GOVERNING LAW
+
+This EULA shall be governed by the laws of the Federal Republic of Germany. Any 
+disputes arising under this EULA shall be subject to the exclusive jurisdiction 
+of the courts in Brandenburg, Germany.
+
+================================================================================
+
+11. ENTIRE AGREEMENT
+
+This EULA constitutes the entire agreement between you and Gressling Consulting 
+GmbH concerning the Software and supersedes all prior agreements and 
+understandings.
+
+================================================================================
+
+12. CONTACT INFORMATION
+
+For questions about this EULA or the Software, please contact:
+
+Gressling Consulting GmbH
+Am Glunzbusch 9
+15741 Bestensee
+Brandenburg, Deutschland
+Telefon: +49 172 5328003
+E-Mail: mail@gressling.com
+
+Web: https://github.com/Gressling/42001
+
+================================================================================
+
+By clicking "I Agree" or by installing, copying, or using the Software, you 
+acknowledge that you have read this EULA, understand it, and agree to be bound 
+by its terms and conditions.
+
+Version: 1.0.0
+Date: October 31, 2025

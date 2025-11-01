@@ -13,7 +13,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
+# build/ - We want to keep our build config directory
 develop-eggs/
 dist/
 downloads/
@@ -184,3 +184,10 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Build artifacts (but keep build config directory)
+build/build/
+dist/
+installer/
+portable/
+*.exe
