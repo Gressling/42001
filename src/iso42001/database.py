@@ -234,6 +234,39 @@ class ISO42001Database:
         conn.close()
         return df
     
+    def update_risk(self, risk_id: int, **kwargs) -> bool:
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Build dynamic update query
+        fields = []
+        values = []
+        for key, value in kwargs.items():
+            if key in ['asset_id', 'risk_title', 'risk_description', 'risk_category', 
+                      'likelihood', 'impact', 'risk_level', 'mitigation_strategy', 'owner', 'status']:
+                fields.append(f"{key} = ?")
+                values.append(value)
+        
+        if fields:
+            fields.append("updated_date = ?")
+            values.append(datetime.now())
+            values.append(risk_id)
+            
+            query = f"UPDATE risks SET {', '.join(fields)} WHERE id = ?"
+            cursor.execute(query, values)
+            conn.commit()
+        
+        conn.close()
+        return True
+    
+    def delete_risk(self, risk_id: int) -> bool:
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM risks WHERE id = ?", (risk_id,))
+        conn.commit()
+        conn.close()
+        return True
+    
     # Control CRUD operations
     def add_control(self, control_id: str, control_name: str, control_description: str = "",
                    control_type: str = "Preventive", implementation_status: str = "Not Started",
@@ -256,6 +289,39 @@ class ISO42001Database:
         df = pd.read_sql_query("SELECT * FROM controls ORDER BY created_date DESC", conn)
         conn.close()
         return df
+    
+    def update_control(self, control_db_id: int, **kwargs) -> bool:
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Build dynamic update query
+        fields = []
+        values = []
+        for key, value in kwargs.items():
+            if key in ['control_id', 'control_name', 'control_description', 'control_type', 
+                      'implementation_status', 'effectiveness', 'owner']:
+                fields.append(f"{key} = ?")
+                values.append(value)
+        
+        if fields:
+            fields.append("updated_date = ?")
+            values.append(datetime.now())
+            values.append(control_db_id)
+            
+            query = f"UPDATE controls SET {', '.join(fields)} WHERE id = ?"
+            cursor.execute(query, values)
+            conn.commit()
+        
+        conn.close()
+        return True
+    
+    def delete_control(self, control_db_id: int) -> bool:
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM controls WHERE id = ?", (control_db_id,))
+        conn.commit()
+        conn.close()
+        return True
     
     # Incident CRUD operations
     def add_incident(self, incident_title: str, incident_description: str = "", 

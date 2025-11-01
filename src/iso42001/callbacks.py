@@ -122,18 +122,67 @@ def save_asset(n_clicks, name, asset_type, description, criticality, owner, stat
 
 # Risk callbacks
 @callback(
-    Output("risk-modal", "is_open", allow_duplicate=True),
-    [Input("add-risk-btn", "n_clicks"), 
-     Input("submit-risk", "n_clicks"), 
+    [Output("risk-modal", "is_open", allow_duplicate=True),
+     Output("risk-modal-title", "children", allow_duplicate=True),
+     Output("edit-risk-id", "data", allow_duplicate=True),
+     Output("risk-asset", "value", allow_duplicate=True),
+     Output("risk-title", "value", allow_duplicate=True),
+     Output("risk-description", "value", allow_duplicate=True),
+     Output("risk-category", "value", allow_duplicate=True),
+     Output("risk-likelihood", "value", allow_duplicate=True),
+     Output("risk-impact", "value", allow_duplicate=True),
+     Output("risk-level", "value", allow_duplicate=True),
+     Output("risk-mitigation", "value", allow_duplicate=True),
+     Output("risk-owner", "value", allow_duplicate=True),
+     Output("risk-status", "value", allow_duplicate=True)],
+    [Input("add-risk-btn", "n_clicks"),
+     Input("risks-table", "active_cell"),
      Input("cancel-risk", "n_clicks")],
-    [State("risk-modal", "is_open")],
+    [State("risk-modal", "is_open"),
+     State("risks-table", "data")],
     prevent_initial_call=True
 )
-def toggle_risk_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
-    """Toggle risk modal visibility"""
-    if ctx.triggered_id in ["add-risk-btn", "submit-risk", "cancel-risk"]:
-        return not is_open
-    return False
+def handle_risk_modal(add_clicks, active_cell, cancel_clicks, is_open, table_data):
+    """Handle opening risk modal for add/edit and closing"""
+    triggered_id = ctx.triggered_id
+    
+    if triggered_id == "add-risk-btn":
+        # Open modal for adding new risk
+        return (True, "Add New Risk", None, "", "", "", "", "Medium", "Medium", 
+                "Medium", "", "", "Open")
+    
+    elif triggered_id == "risks-table" and active_cell:
+        # Check if Edit button was clicked
+        if active_cell['column_id'] == 'edit':
+            row_data = table_data[active_cell['row']]
+            risk_id = row_data['id']
+            
+            # Format asset dropdown value if asset exists
+            asset_value = ""
+            if row_data.get('asset_id') and row_data.get('asset_name'):
+                asset_value = f"{row_data['asset_id']} - {row_data['asset_name']}"
+            
+            # Open modal for editing with existing data
+            return (True, "Edit Risk", risk_id,
+                   asset_value,
+                   row_data.get('risk_title', ''),
+                   row_data.get('risk_description', ''),
+                   row_data.get('risk_category', ''),
+                   row_data.get('likelihood', 'Medium'),
+                   row_data.get('impact', 'Medium'),
+                   row_data.get('risk_level', 'Medium'),
+                   row_data.get('mitigation_strategy', ''),
+                   row_data.get('owner', ''),
+                   row_data.get('status', 'Open'))
+    
+    elif triggered_id == "cancel-risk":
+        # Close modal and clear form
+        return (False, "Add New Risk", None, "", "", "", "", "Medium", "Medium", 
+                "Medium", "", "", "Open")
+    
+    # Default: return current state
+    return (is_open, "Add New Risk", None, "", "", "", "", "Medium", "Medium", 
+            "Medium", "", "", "Open")
 
 @callback(
     [Output("risks-table-container", "children", allow_duplicate=True),
@@ -147,7 +196,8 @@ def toggle_risk_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
      Output("risk-mitigation", "value", allow_duplicate=True),
      Output("risk-owner", "value", allow_duplicate=True),
      Output("risk-status", "value", allow_duplicate=True),
-     Output("risk-modal", "is_open", allow_duplicate=True)],
+     Output("risk-modal", "is_open", allow_duplicate=True),
+     Output("edit-risk-id", "data", allow_duplicate=True)],
     [Input("submit-risk", "n_clicks")],
     [State("risk-asset", "value"),
      State("risk-title", "value"),
@@ -158,12 +208,13 @@ def toggle_risk_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
      State("risk-level", "value"),
      State("risk-mitigation", "value"),
      State("risk-owner", "value"),
-     State("risk-status", "value")],
+     State("risk-status", "value"),
+     State("edit-risk-id", "data")],
     prevent_initial_call=True
 )
-def add_risk(n_clicks, asset, title, description, category, likelihood, impact, 
-            risk_level, mitigation, owner, status):
-    """Add new risk and refresh table"""
+def save_risk(n_clicks, asset, title, description, category, likelihood, impact, 
+            risk_level, mitigation, owner, status, edit_risk_id):
+    """Add new risk or update existing risk and refresh table"""
     if n_clicks and title:
         try:
             # Extract asset ID from dropdown value (format: "1 - Asset Name")
@@ -171,41 +222,96 @@ def add_risk(n_clicks, asset, title, description, category, likelihood, impact,
             if asset:
                 asset_id = int(asset.split(" - ")[0])
             
-            db.add_risk(asset_id, title, description or "", category or "", 
-                       likelihood or "Medium", impact or "Medium", risk_level or "Medium",
-                       mitigation or "", owner or "", status or "Open")
+            if edit_risk_id:
+                # Update existing risk
+                db.update_risk(
+                    edit_risk_id,
+                    asset_id=asset_id,
+                    risk_title=title,
+                    risk_description=description or "",
+                    risk_category=category or "",
+                    likelihood=likelihood or "Medium",
+                    impact=impact or "Medium",
+                    risk_level=risk_level or "Medium",
+                    mitigation_strategy=mitigation or "",
+                    owner=owner or "",
+                    status=status or "Open"
+                )
+            else:
+                # Add new risk
+                db.add_risk(asset_id, title, description or "", category or "", 
+                           likelihood or "Medium", impact or "Medium", risk_level or "Medium",
+                           mitigation or "", owner or "", status or "Open")
             
             # Refresh table
             risks_df = db.get_risks()
             table = create_data_table(risks_df, "risks-table")
             
             # Clear form and close modal
-            return table, "", "", "", "", "Medium", "Medium", "Medium", "", "", "Open", False
+            return table, "", "", "", "", "Medium", "Medium", "Medium", "", "", "Open", False, None
         except Exception as e:
-            print(f"Error adding risk: {e}")
+            print(f"Error saving risk: {e}")
     
     # Return current state
     try:
         risks_df = db.get_risks()
         table = create_data_table(risks_df, "risks-table")
-        return table, "", "", "", "", "Medium", "Medium", "Medium", "", "", "Open", False
+        return table, "", "", "", "", "Medium", "Medium", "Medium", "", "", "Open", False, None
     except:
-        return html.Div("Error loading risks"), "", "", "", "", "Medium", "Medium", "Medium", "", "", "Open", False
+        return html.Div("Error loading risks"), "", "", "", "", "Medium", "Medium", "Medium", "", "", "Open", False, None
 
 # Control callbacks
 @callback(
-    Output("control-modal", "is_open", allow_duplicate=True),
-    [Input("add-control-btn", "n_clicks"), 
-     Input("submit-control", "n_clicks"), 
+    [Output("control-modal", "is_open", allow_duplicate=True),
+     Output("control-modal-title", "children", allow_duplicate=True),
+     Output("edit-control-id", "data", allow_duplicate=True),
+     Output("control-id", "value", allow_duplicate=True),
+     Output("control-name", "value", allow_duplicate=True),
+     Output("control-description", "value", allow_duplicate=True),
+     Output("control-type", "value", allow_duplicate=True),
+     Output("control-implementation", "value", allow_duplicate=True),
+     Output("control-effectiveness", "value", allow_duplicate=True),
+     Output("control-owner", "value", allow_duplicate=True)],
+    [Input("add-control-btn", "n_clicks"),
+     Input("controls-table", "active_cell"),
      Input("cancel-control", "n_clicks")],
-    [State("control-modal", "is_open")],
+    [State("control-modal", "is_open"),
+     State("controls-table", "data")],
     prevent_initial_call=True
 )
-def toggle_control_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
-    """Toggle control modal visibility"""
-    if ctx.triggered_id in ["add-control-btn", "submit-control", "cancel-control"]:
-        return not is_open
-    return False
+def handle_control_modal(add_clicks, active_cell, cancel_clicks, is_open, table_data):
+    """Handle opening control modal for add/edit and closing"""
+    triggered_id = ctx.triggered_id
+    
+    if triggered_id == "add-control-btn":
+        # Open modal for adding new control
+        return (True, "Add New Control", None, "", "", "", "Preventive", 
+                "Not Started", "Not Assessed", "")
+    
+    elif triggered_id == "controls-table" and active_cell:
+        # Check if Edit button was clicked
+        if active_cell['column_id'] == 'edit':
+            row_data = table_data[active_cell['row']]
+            control_db_id = row_data['id']
+            
+            # Open modal for editing with existing data
+            return (True, "Edit Control", control_db_id,
+                   row_data.get('control_id', ''),
+                   row_data.get('control_name', ''),
+                   row_data.get('control_description', ''),
+                   row_data.get('control_type', 'Preventive'),
+                   row_data.get('implementation_status', 'Not Started'),
+                   row_data.get('effectiveness', 'Not Assessed'),
+                   row_data.get('owner', ''))
+    
+    elif triggered_id == "cancel-control":
+        # Close modal and clear form
+        return (False, "Add New Control", None, "", "", "", "Preventive", 
+                "Not Started", "Not Assessed", "")
+    
+    # Default: return current state
+    return (is_open, "Add New Control", None, "", "", "", "Preventive", 
+            "Not Started", "Not Assessed", "")
 
 @callback(
     [Output("controls-table-container", "children", allow_duplicate=True),
@@ -216,7 +322,8 @@ def toggle_control_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
      Output("control-implementation", "value", allow_duplicate=True),
      Output("control-effectiveness", "value", allow_duplicate=True),
      Output("control-owner", "value", allow_duplicate=True),
-     Output("control-modal", "is_open", allow_duplicate=True)],
+     Output("control-modal", "is_open", allow_duplicate=True),
+     Output("edit-control-id", "data", allow_duplicate=True)],
     [Input("submit-control", "n_clicks")],
     [State("control-id", "value"),
      State("control-name", "value"),
@@ -224,34 +331,49 @@ def toggle_control_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
      State("control-type", "value"),
      State("control-implementation", "value"),
      State("control-effectiveness", "value"),
-     State("control-owner", "value")],
+     State("control-owner", "value"),
+     State("edit-control-id", "data")],
     prevent_initial_call=True
 )
-def add_control(n_clicks, control_id, name, description, control_type, 
-               implementation, effectiveness, owner):
-    """Add new control and refresh table"""
+def save_control(n_clicks, control_id, name, description, control_type, 
+               implementation, effectiveness, owner, edit_control_id):
+    """Add new control or update existing control and refresh table"""
     if n_clicks and control_id and name:
         try:
-            db.add_control(control_id, name, description or "", control_type or "Preventive",
-                          implementation or "Not Started", effectiveness or "Not Assessed", 
-                          owner or "")
+            if edit_control_id:
+                # Update existing control
+                db.update_control(
+                    edit_control_id,
+                    control_id=control_id,
+                    control_name=name,
+                    control_description=description or "",
+                    control_type=control_type or "Preventive",
+                    implementation_status=implementation or "Not Started",
+                    effectiveness=effectiveness or "Not Assessed",
+                    owner=owner or ""
+                )
+            else:
+                # Add new control
+                db.add_control(control_id, name, description or "", control_type or "Preventive",
+                              implementation or "Not Started", effectiveness or "Not Assessed", 
+                              owner or "")
             
             # Refresh table
             controls_df = db.get_controls()
             table = create_data_table(controls_df, "controls-table")
             
             # Clear form and close modal
-            return table, "", "", "", "Preventive", "Not Started", "Not Assessed", "", False
+            return table, "", "", "", "Preventive", "Not Started", "Not Assessed", "", False, None
         except Exception as e:
-            print(f"Error adding control: {e}")
+            print(f"Error saving control: {e}")
     
     # Return current state
     try:
         controls_df = db.get_controls()
         table = create_data_table(controls_df, "controls-table")
-        return table, "", "", "", "Preventive", "Not Started", "Not Assessed", "", False
+        return table, "", "", "", "Preventive", "Not Started", "Not Assessed", "", False, None
     except:
-        return html.Div("Error loading controls"), "", "", "", "Preventive", "Not Started", "Not Assessed", "", False
+        return html.Div("Error loading controls"), "", "", "", "Preventive", "Not Started", "Not Assessed", "", False, None
 
 # Incident callbacks
 @callback(

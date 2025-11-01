@@ -127,9 +127,9 @@ def create_data_table(df, table_id):
     if df.empty:
         return html.Div("No data available", className="text-center text-muted p-4")
     
-    # Add edit column for assets table
+    # Add edit column for editable tables
     columns = []
-    if table_id == "assets-table" and not df.empty:
+    if table_id in ["assets-table", "risks-table", "controls-table"] and not df.empty:
         # Add edit buttons to data
         df_copy = df.copy()
         df_copy['edit'] = "Edit"  # Simple text for now, will be handled by callback
@@ -142,7 +142,7 @@ def create_data_table(df, table_id):
             "id": "edit"
         })
     else:
-        # Add regular columns for non-assets tables
+        # Add regular columns for non-editable tables
         columns = [{"name": col, "id": col} for col in df.columns]
     
     return dash_table.DataTable(
@@ -271,10 +271,12 @@ def render_risks_tab():
             ], width=4)
         ], className="mb-4"),
         
-        # Add risk modal
+        # Add/Edit risk modal
         dbc.Modal([
-            dbc.ModalHeader(dbc.ModalTitle("Add New Risk")),
+            dbc.ModalHeader(dbc.ModalTitle(id="risk-modal-title")),
             dbc.ModalBody([
+                # Hidden field to store risk ID for editing
+                dcc.Store(id="edit-risk-id", data=None),
                 create_form_input("Associated Asset", "risk-asset", "dropdown",
                                 [f"{row['id']} - {row['name']}" for _, row in assets_df.iterrows()] if not assets_df.empty else []),
                 create_form_input("Risk Title", "risk-title"),
@@ -293,7 +295,7 @@ def render_risks_tab():
             ]),
             dbc.ModalFooter([
                 dbc.Button("Cancel", id="cancel-risk", className="ms-auto", n_clicks=0),
-                dbc.Button("Add Risk", id="submit-risk", color="primary", className="ms-2", n_clicks=0)
+                dbc.Button("Save Risk", id="submit-risk", color="primary", className="ms-2", n_clicks=0)
             ])
         ], id="risk-modal", is_open=False),
         
@@ -318,10 +320,12 @@ def render_controls_tab():
             ], width=4)
         ], className="mb-4"),
         
-        # Add control modal
+        # Add/Edit control modal
         dbc.Modal([
-            dbc.ModalHeader(dbc.ModalTitle("Add New Control")),
+            dbc.ModalHeader(dbc.ModalTitle(id="control-modal-title")),
             dbc.ModalBody([
+                # Hidden field to store control ID for editing
+                dcc.Store(id="edit-control-id", data=None),
                 create_form_input("Control ID", "control-id"),
                 create_form_input("Control Name", "control-name"),
                 create_form_input("Control Description", "control-description", "textarea"),
@@ -335,7 +339,7 @@ def render_controls_tab():
             ]),
             dbc.ModalFooter([
                 dbc.Button("Cancel", id="cancel-control", className="ms-auto", n_clicks=0),
-                dbc.Button("Add Control", id="submit-control", color="primary", className="ms-2", n_clicks=0)
+                dbc.Button("Save Control", id="submit-control", color="primary", className="ms-2", n_clicks=0)
             ])
         ], id="control-modal", is_open=False),
         
@@ -582,6 +586,8 @@ def create_app_layout():
             dbc.Button(id="add-risk-btn", style={'display': 'none'}),
             dbc.Button(id="submit-risk", style={'display': 'none'}),
             dbc.Button(id="cancel-risk", style={'display': 'none'}),
+            dcc.Store(id="edit-risk-id"),
+            html.H4(id="risk-modal-title", style={'display': 'none'}),
             
             # Control placeholders
             html.Div(id="controls-table-container", style={'display': 'none'}),
@@ -596,6 +602,8 @@ def create_app_layout():
             dbc.Button(id="add-control-btn", style={'display': 'none'}),
             dbc.Button(id="submit-control", style={'display': 'none'}),
             dbc.Button(id="cancel-control", style={'display': 'none'}),
+            dcc.Store(id="edit-control-id"),
+            html.H4(id="control-modal-title", style={'display': 'none'}),
             
             # Incident placeholders
             html.Div(id="incidents-table-container", style={'display': 'none'}),

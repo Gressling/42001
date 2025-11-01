@@ -33,9 +33,8 @@ echo Checking Python environment...
 python --version
 
 echo.
-echo Installing/updating dependencies...
-python -m pip install --upgrade pip
-pip install -r "%PROJECT_ROOT%\requirements.txt"
+echo Checking dependencies...
+pip install -r "%PROJECT_ROOT%\requirements.txt" --quiet
 if errorlevel 1 (
     echo ERROR: Failed to install dependencies
     pause
