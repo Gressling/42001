@@ -535,6 +535,185 @@ def render_admin_tab():
         ])
     ])
 
+def render_regulatory_report_tab():
+    """Render the Regulatory Audit Report tab"""
+    try:
+        # Get data from database
+        assets_df = db.get_assets()
+        risks_df = db.get_risks()  
+        controls_df = db.get_controls()
+        incidents_df = db.get_incidents()
+        audits_df = db.get_audits()
+        
+        # Calculate key metrics
+        total_assets = len(assets_df)
+        critical_assets = len(assets_df[assets_df['criticality'] == 'High']) if not assets_df.empty else 0
+        
+        total_risks = len(risks_df)
+        high_risks = len(risks_df[risks_df['risk_level'] == 'High']) if not risks_df.empty else 0
+        
+        total_controls = len(controls_df)
+        effective_controls = len(controls_df[controls_df['effectiveness'] == 'Effective']) if not controls_df.empty else 0
+        
+        total_incidents = len(incidents_df)
+        open_incidents = len(incidents_df[incidents_df['status'] == 'Open']) if not incidents_df.empty else 0
+        
+        total_audits = len(audits_df)
+        completed_audits = len(audits_df[audits_df['status'] == 'Completed']) if not audits_df.empty else 0
+        
+        # Calculate compliance score (average of completed audits)
+        if not audits_df.empty and completed_audits > 0:
+            completed_audit_data = audits_df[audits_df['status'] == 'Completed']
+            avg_compliance_score = round(completed_audit_data['compliance_score'].mean(), 1)
+        else:
+            avg_compliance_score = 0
+        
+        # Risk distribution
+        risk_distribution = risks_df['risk_level'].value_counts().to_dict() if not risks_df.empty else {}
+        
+        # Control effectiveness distribution
+        control_effectiveness = controls_df['effectiveness'].value_counts().to_dict() if not controls_df.empty else {}
+        
+        return dbc.Container([
+            # Header
+            dbc.Row([
+                dbc.Col([
+                    html.H3("Regulatory Audit Report", style={'color': CARBON_COLORS['primary']}),
+                    html.P("Comprehensive summary for regulatory compliance assessment", 
+                          style={'color': CARBON_COLORS['text_secondary']}),
+                    html.Hr()
+                ])
+            ], className="mb-4"),
+            
+            # Key Metrics Summary
+            dbc.Row([
+                dbc.Col([
+                    html.H5("Executive Summary", className="mb-3", style={'color': CARBON_COLORS['primary']}),
+                    
+                    # Metrics Cards
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Card([
+                                dbc.CardBody([
+                                    html.H4(f"{avg_compliance_score}%", className="text-center", 
+                                           style={'color': CARBON_COLORS['success'] if avg_compliance_score >= 80 
+                                                 else CARBON_COLORS['warning'] if avg_compliance_score >= 60 
+                                                 else CARBON_COLORS['danger']}),
+                                    html.P("Overall Compliance Score", className="text-center text-muted")
+                                ])
+                            ], color="light")
+                        ], width=3),
+                        
+                        dbc.Col([
+                            dbc.Card([
+                                dbc.CardBody([
+                                    html.H4(f"{total_assets}", className="text-center"),
+                                    html.P("Total Assets", className="text-center text-muted"),
+                                    html.Small(f"{critical_assets} Critical", className="text-center d-block text-danger")
+                                ])
+                            ], color="light")
+                        ], width=3),
+                        
+                        dbc.Col([
+                            dbc.Card([
+                                dbc.CardBody([
+                                    html.H4(f"{total_risks}", className="text-center"),
+                                    html.P("Total Risks", className="text-center text-muted"),
+                                    html.Small(f"{high_risks} High Risk", className="text-center d-block text-warning")
+                                ])
+                            ], color="light")
+                        ], width=3),
+                        
+                        dbc.Col([
+                            dbc.Card([
+                                dbc.CardBody([
+                                    html.H4(f"{total_incidents}", className="text-center"),
+                                    html.P("Total Incidents", className="text-center text-muted"),
+                                    html.Small(f"{open_incidents} Open", className="text-center d-block text-info")
+                                ])
+                            ], color="light")
+                        ], width=3)
+                    ], className="mb-4")
+                ])
+            ]),
+            
+            # Detailed Analysis
+            dbc.Row([
+                # Risk Analysis
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader(html.H6("Risk Analysis", className="mb-0")),
+                        dbc.CardBody([
+                            html.P(f"Total Risks Identified: {total_risks}"),
+                            html.Ul([
+                                html.Li(f"High Risk: {risk_distribution.get('High', 0)}"),
+                                html.Li(f"Medium Risk: {risk_distribution.get('Medium', 0)}"),
+                                html.Li(f"Low Risk: {risk_distribution.get('Low', 0)}")
+                            ]) if risk_distribution else html.P("No risks recorded", className="text-muted")
+                        ])
+                    ])
+                ], width=6),
+                
+                # Control Effectiveness
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader(html.H6("Control Effectiveness", className="mb-0")),
+                        dbc.CardBody([
+                            html.P(f"Total Controls: {total_controls}"),
+                            html.Ul([
+                                html.Li(f"Effective: {control_effectiveness.get('Effective', 0)}"),
+                                html.Li(f"Partially Effective: {control_effectiveness.get('Partially Effective', 0)}"),
+                                html.Li(f"Ineffective: {control_effectiveness.get('Ineffective', 0)}")
+                            ]) if control_effectiveness else html.P("No controls recorded", className="text-muted")
+                        ])
+                    ])
+                ], width=6)
+            ], className="mb-4"),
+            
+            # Audit History
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader(html.H6("Audit History & Compliance", className="mb-0")),
+                        dbc.CardBody([
+                            html.P(f"Total Audits: {total_audits}"),
+                            html.P(f"Completed Audits: {completed_audits}"),
+                            html.P(f"Pending Audits: {total_audits - completed_audits}"),
+                            
+                            # Recent audits table if any exist
+                            html.H6("Recent Audits:", className="mt-3") if not audits_df.empty else "",
+                            create_data_table(audits_df.head(5), "recent-audits-table") if not audits_df.empty 
+                            else html.P("No audits recorded", className="text-muted")
+                        ])
+                    ])
+                ])
+            ], className="mb-4"),
+            
+            # Recommendations
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader(html.H6("Regulatory Compliance Recommendations", className="mb-0")),
+                        dbc.CardBody([
+                            html.Ul([
+                                html.Li("Ensure all critical assets have appropriate controls in place"),
+                                html.Li("Address all high-risk items with mitigation strategies"),
+                                html.Li("Complete pending audit activities to maintain compliance"),
+                                html.Li("Review and update incident response procedures regularly"),
+                                html.Li("Maintain documentation for all AI system governance activities")
+                            ])
+                        ])
+                    ], color="info", outline=True)
+                ])
+            ])
+        ])
+        
+    except Exception as e:
+        return dbc.Container([
+            dbc.Alert(f"Error generating regulatory report: {str(e)}", color="danger"),
+            html.P("Please ensure data is properly loaded in other tabs.")
+        ])
+
 def create_app_layout():
     """Create the main application layout"""
     return dbc.Container([
@@ -550,6 +729,7 @@ def create_app_layout():
             dcc.Tab(label="Controls", value="controls", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
             dcc.Tab(label="Incidents", value="incidents", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
             dcc.Tab(label="Compliance", value="compliance", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
+            dcc.Tab(label="Regulatory Report", value="regulatory-report", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
             dcc.Tab(label="Administration", value="admin", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
         ]),
         

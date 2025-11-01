@@ -18,6 +18,7 @@ from .layout import (
     render_controls_tab, 
     render_incidents_tab, 
     render_compliance_tab, 
+    render_regulatory_report_tab,
     render_admin_tab,
     get_version_major_minor
 )
@@ -25,8 +26,11 @@ from .layout import (
 # Initialize the database
 db = ISO42001Database()
 
-# Initialize Dash app with IBM Carbon theme
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
+# Initialize Dash app with IBM Carbon theme and custom assets
+app = dash.Dash(__name__, 
+                external_stylesheets=[dbc.themes.BOOTSTRAP], 
+                suppress_callback_exceptions=True,
+                assets_folder='assets')
 app.title = f"ISO 42001 Bookkeeping System {get_version_major_minor()}"
 
 # Set the app layout
@@ -46,6 +50,8 @@ def render_tab_content(active_tab):
         return render_incidents_tab()
     elif active_tab == 'compliance':
         return render_compliance_tab()
+    elif active_tab == 'regulatory-report':
+        return render_regulatory_report_tab()
     elif active_tab == 'admin':
         return render_admin_tab()
     
