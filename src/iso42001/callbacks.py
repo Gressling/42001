@@ -12,23 +12,56 @@ db = ISO42001Database()
 
 def create_data_table(df, table_id):
     """Create a standard data table with Carbon styling"""
-    from .app import create_data_table as app_create_data_table
-    return app_create_data_table(df, table_id)
+    from .layout import create_data_table as layout_create_data_table
+    return layout_create_data_table(df, table_id)
 
 # Asset callbacks
 @callback(
-    Output("asset-modal", "is_open", allow_duplicate=True),
-    [Input("add-asset-btn", "n_clicks"), 
-     Input("submit-asset", "n_clicks"), 
+    [Output("asset-modal", "is_open", allow_duplicate=True),
+     Output("asset-modal-title", "children", allow_duplicate=True),
+     Output("edit-asset-id", "data", allow_duplicate=True),
+     Output("asset-name", "value", allow_duplicate=True),
+     Output("asset-type", "value", allow_duplicate=True),
+     Output("asset-description", "value", allow_duplicate=True),
+     Output("asset-criticality", "value", allow_duplicate=True),
+     Output("asset-owner", "value", allow_duplicate=True),
+     Output("asset-status", "value", allow_duplicate=True)],
+    [Input("add-asset-btn", "n_clicks"),
+     Input("assets-table", "active_cell"),
      Input("cancel-asset", "n_clicks")],
-    [State("asset-modal", "is_open")],
+    [State("asset-modal", "is_open"),
+     State("assets-table", "data")],
     prevent_initial_call=True
 )
-def toggle_asset_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
-    """Toggle asset modal visibility"""
-    if ctx.triggered_id in ["add-asset-btn", "submit-asset", "cancel-asset"]:
-        return not is_open
-    return False
+def handle_asset_modal(add_clicks, active_cell, cancel_clicks, is_open, table_data):
+    """Handle opening asset modal for add/edit and closing"""
+    triggered_id = ctx.triggered_id
+    
+    if triggered_id == "add-asset-btn":
+        # Open modal for adding new asset
+        return True, "Add New AI Asset", None, "", "", "", "Medium", "", "Active"
+    
+    elif triggered_id == "assets-table" and active_cell:
+        # Check if Edit button was clicked
+        if active_cell['column_id'] == 'edit':
+            row_data = table_data[active_cell['row']]
+            asset_id = row_data['id']
+            
+            # Open modal for editing with existing data
+            return (True, "Edit AI Asset", asset_id, 
+                   row_data.get('name', ''),
+                   row_data.get('type', ''),
+                   row_data.get('description', ''),
+                   row_data.get('criticality', 'Medium'),
+                   row_data.get('owner', ''),
+                   row_data.get('status', 'Active'))
+    
+    elif triggered_id == "cancel-asset":
+        # Close modal and clear form
+        return False, "Add New AI Asset", None, "", "", "", "Medium", "", "Active"
+    
+    # Default: return current state
+    return is_open, "Add New AI Asset", None, "", "", "", "Medium", "", "Active"
 
 @callback(
     [Output("assets-table-container", "children", allow_duplicate=True),
@@ -38,39 +71,54 @@ def toggle_asset_modal(add_clicks, submit_clicks, cancel_clicks, is_open):
      Output("asset-criticality", "value", allow_duplicate=True),
      Output("asset-owner", "value", allow_duplicate=True),
      Output("asset-status", "value", allow_duplicate=True),
-     Output("asset-modal", "is_open", allow_duplicate=True)],
+     Output("asset-modal", "is_open", allow_duplicate=True),
+     Output("edit-asset-id", "data", allow_duplicate=True)],
     [Input("submit-asset", "n_clicks")],
     [State("asset-name", "value"),
      State("asset-type", "value"),
      State("asset-description", "value"),
      State("asset-criticality", "value"),
      State("asset-owner", "value"),
-     State("asset-status", "value")],
+     State("asset-status", "value"),
+     State("edit-asset-id", "data")],
     prevent_initial_call=True
 )
-def add_asset(n_clicks, name, asset_type, description, criticality, owner, status):
-    """Add new asset and refresh table"""
+def save_asset(n_clicks, name, asset_type, description, criticality, owner, status, edit_asset_id):
+    """Add new asset or update existing asset and refresh table"""
     if n_clicks and name and asset_type:
         try:
-            db.add_asset(name, asset_type, description or "", criticality or "Medium", 
-                        owner or "", status or "Active")
+            if edit_asset_id:
+                # Update existing asset
+                db.update_asset(
+                    edit_asset_id,
+                    name=name,
+                    type=asset_type,
+                    description=description or "",
+                    criticality=criticality or "Medium",
+                    owner=owner or "",
+                    status=status or "Active"
+                )
+            else:
+                # Add new asset
+                db.add_asset(name, asset_type, description or "", criticality or "Medium", 
+                            owner or "", status or "Active")
             
             # Refresh table
             assets_df = db.get_assets()
             table = create_data_table(assets_df, "assets-table")
             
             # Clear form and close modal
-            return table, "", "", "", "Medium", "", "Active", False
+            return table, "", "", "", "Medium", "", "Active", False, None
         except Exception as e:
-            print(f"Error adding asset: {e}")
+            print(f"Error saving asset: {e}")
     
     # Return current state without changes
     try:
         assets_df = db.get_assets()
         table = create_data_table(assets_df, "assets-table")
-        return table, "", "", "", "Medium", "", "Active", False
+        return table, "", "", "", "Medium", "", "Active", False, None
     except:
-        return html.Div("Error loading assets"), "", "", "", "Medium", "", "Active", False
+        return html.Div("Error loading assets"), "", "", "", "Medium", "", "Active", False, None
 
 # Risk callbacks
 @callback(
