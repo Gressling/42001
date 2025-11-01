@@ -6,15 +6,15 @@
 !define PRODUCT_PUBLISHER "Gressling Consulting GmbH"
 !define PRODUCT_WEB_SITE "https://github.com/Gressling/42001"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\ISO42001-AIManagementSystem.exe"
-!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
-!define PRODUCT_UNINST_ROOT_KEY "HKLM"
+!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\AI Assets Management"
+!define PRODUCT_UNINST_ROOT_KEY "HKCU"
 
 ; MUI 1.67 compatible ------
 !include "MUI2.nsh"
 
 ; MUI Settings
 !define MUI_ABORTWARNING
-!define MUI_ICON "assets\icon.ico"
+!define MUI_ICON "..\build\iso42001\icon\icon.ico"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
 
 ; Welcome page
@@ -40,8 +40,8 @@
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 OutFile "..\installer\ISO42001-AIManagementSystem-Setup-v${PRODUCT_VERSION}.exe"
-InstallDir "$PROGRAMFILES64\${PRODUCT_NAME}"
-InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
+InstallDir "$APPDATA\AI Assets Management"
+InstallDirRegKey HKCU "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
 
@@ -56,8 +56,8 @@ VIAddVersionKey "FileDescription" "${PRODUCT_NAME} Installer"
 VIAddVersionKey "FileVersion" "${PRODUCT_VERSION}"
 VIAddVersionKey "ProductVersion" "${PRODUCT_VERSION}"
 
-; Request admin privileges
-RequestExecutionLevel admin
+; Request user privileges only (no admin required)
+RequestExecutionLevel user
 
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
@@ -65,29 +65,24 @@ Section "MainSection" SEC01
   
   ; Main executable
   File "..\dist\ISO42001-AIManagementSystem.exe"
-  CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
-  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk" "$INSTDIR\ISO42001-AIManagementSystem.exe"
-  CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\ISO42001-AIManagementSystem.exe"
+  CreateDirectory "$SMPROGRAMS\AI Assets Management"
+  CreateShortCut "$SMPROGRAMS\AI Assets Management\AI Assets Management.lnk" "$INSTDIR\ISO42001-AIManagementSystem.exe"
+  CreateShortCut "$DESKTOP\AI Assets Management.lnk" "$INSTDIR\ISO42001-AIManagementSystem.exe"
   
   ; Documentation
   File "..\README.md"
   File "..\LICENSE"
   File "EULA.txt"
-  IfFileExists "..\CHANGELOG.md" 0 +2
-  File "..\CHANGELOG.md"
   
-  ; Create documentation shortcuts
-  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\Documentation.lnk" "$INSTDIR\README.md"
-  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\License.lnk" "$INSTDIR\LICENSE"
-  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\EULA.lnk" "$INSTDIR\EULA.txt"
+  ; Create shortcuts
+  ; Documentation, EULA and License shortcuts removed per user request
   
   ; Documentation folder
   SetOutPath "$INSTDIR\docs"
   File /r "..\docs\*"
   
-  ; Data folder (sample data readme)
+  ; Data folder 
   SetOutPath "$INSTDIR\data"
-  File "..\data\README.md"
   
   ; Configuration files
   SetOutPath "$INSTDIR"
@@ -97,19 +92,20 @@ Section "MainSection" SEC01
 SectionEnd
 
 Section -AdditionalIcons
-  CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
-  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk" "$INSTDIR\uninst.exe"
+  CreateDirectory "$SMPROGRAMS\AI Assets Management"
+  CreateShortCut "$SMPROGRAMS\AI Assets Management\Uninstall AI Assets Management.lnk" "$INSTDIR\uninst.exe"
 SectionEnd
 
 Section -Post
   WriteUninstaller "$INSTDIR\uninst.exe"
-  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\ISO42001-AIManagementSystem.exe"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\ISO42001-AIManagementSystem.exe"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+  WriteRegStr HKCU "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\ISO42001-AIManagementSystem.exe"
+  WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "DisplayName" "AI Assets Management"
+  WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
+  WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\ISO42001-AIManagementSystem.exe"
+  WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
+  WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
+  WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+  WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "InstallLocation" "$INSTDIR"
 SectionEnd
 
 Function un.onUninstSuccess
@@ -118,12 +114,30 @@ Function un.onUninstSuccess
 FunctionEnd
 
 Function un.onInit
-  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Are you sure you want to completely remove $(^Name) and all of its components?" IDYES +2
+  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Are you sure you want to uninstall AI Assets Management?" IDYES +2
   Abort
 FunctionEnd
 
+; Custom function to ask about keeping data
+Function un.KeepDataDialog
+  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON1 "Do you want to keep your AI management data (database files)?$\n$\nSelect 'Yes' to keep your data for future use.$\nSelect 'No' to completely remove all data." IDYES keep_data
+  
+  ; User chose to delete data
+  StrCpy $R0 "delete"
+  Goto done
+  
+  keep_data:
+  ; User chose to keep data
+  StrCpy $R0 "keep"
+  
+  done:
+FunctionEnd
+
 Section Uninstall
-  Delete "$INSTDIR\${PRODUCT_NAME}.url"
+  ; Ask user about keeping data
+  Call un.KeepDataDialog
+  
+  ; Remove application files
   Delete "$INSTDIR\uninst.exe"
   Delete "$INSTDIR\ISO42001-AIManagementSystem.exe"
   Delete "$INSTDIR\README.md"
@@ -135,19 +149,46 @@ Section Uninstall
   
   ; Remove documentation
   RMDir /r "$INSTDIR\docs"
-  RMDir /r "$INSTDIR\data"
+  
+  ; Handle data directory based on user choice
+  StrCmp $R0 "delete" delete_data keep_data
+  
+  delete_data:
+    ; Remove all data including database files
+    RMDir /r "$INSTDIR\data"
+    Delete "$INSTDIR\*.db"
+    Delete "$INSTDIR\iso42001.db"
+    MessageBox MB_ICONINFORMATION "All application data has been removed."
+    Goto cleanup_shortcuts
+  
+  keep_data:
+    ; Keep database files but remove data folder structure
+    Delete "$INSTDIR\data\README.md"
+    RMDir "$INSTDIR\data"
+    MessageBox MB_ICONINFORMATION "Application removed but your data files have been preserved in:$\n$INSTDIR"
+    Goto cleanup_shortcuts
+  
+  cleanup_shortcuts:
+  ; Remove Start Menu shortcuts
+  Delete "$SMPROGRAMS\AI Assets Management\Uninstall AI Assets Management.lnk"
+  Delete "$SMPROGRAMS\AI Assets Management\AI Assets Management.lnk"
+  Delete "$DESKTOP\AI Assets Management.lnk"
 
-  Delete "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk"
-  Delete "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk"
-  Delete "$SMPROGRAMS\${PRODUCT_NAME}\Documentation.lnk"
-  Delete "$SMPROGRAMS\${PRODUCT_NAME}\License.lnk"
-  Delete "$SMPROGRAMS\${PRODUCT_NAME}\EULA.lnk"
-  Delete "$DESKTOP\${PRODUCT_NAME}.lnk"
-
-  RMDir "$SMPROGRAMS\${PRODUCT_NAME}"
-  RMDir "$INSTDIR"
-
+  RMDir "$SMPROGRAMS\AI Assets Management"
+  
+  ; Only remove install directory if user chose to delete data
+  StrCmp $R0 "delete" remove_install_dir keep_install_dir
+  
+  remove_install_dir:
+    RMDir "$INSTDIR"
+    Goto cleanup_registry
+  
+  keep_install_dir:
+    ; Don't remove install directory as it contains user data
+    Goto cleanup_registry
+  
+  cleanup_registry:
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
-  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
+  DeleteRegKey HKCU "${PRODUCT_DIR_REGKEY}"
   SetAutoClose true
 SectionEnd

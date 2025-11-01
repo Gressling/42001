@@ -135,12 +135,13 @@ if exist "dist\ISO42001-AIManagementSystem.exe" exit /b 0
 exit /b 1
 
 :check_nsis
+set NSIS_EXE=
 if exist "%ProgramFiles(x86)%\NSIS\makensis.exe" (
-    set NSIS_EXE="%ProgramFiles(x86)%\NSIS\makensis.exe"
+    set "NSIS_EXE=%ProgramFiles(x86)%\NSIS\makensis.exe"
     exit /b 0
 )
 if exist "%ProgramFiles%\NSIS\makensis.exe" (
-    set NSIS_EXE="%ProgramFiles%\NSIS\makensis.exe"
+    set "NSIS_EXE=%ProgramFiles%\NSIS\makensis.exe"
     exit /b 0
 )
 echo ERROR: NSIS not found! Install from: https://nsis.sourceforge.io/

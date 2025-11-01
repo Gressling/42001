@@ -67,7 +67,7 @@ binaries = []
 
 # Analysis
 a = Analysis(
-    ['main.py'],
+    [str(spec_root / 'main.py')],
     pathex=[str(spec_root)],
     binaries=binaries,
     datas=datas,
