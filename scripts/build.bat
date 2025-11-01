@@ -70,6 +70,9 @@ echo Building Windows installer...
 call :check_nsis || exit /b 1
 call :check_exe || call :build_exe || exit /b 1
 
+echo Creating example database for distribution...
+python scripts\create_example_db.py
+
 if not exist "installer" mkdir installer
 "%NSIS_EXE%" "%NSIS_SCRIPT%"
 

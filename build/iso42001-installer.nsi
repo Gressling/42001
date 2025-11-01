@@ -81,8 +81,11 @@ Section "MainSection" SEC01
   SetOutPath "$INSTDIR\docs"
   File /r "..\docs\*"
   
-  ; Data folder 
+  ; Data folder with example database
   SetOutPath "$INSTDIR\data"
+  File "..\data\iso42001_example.db"
+  ; Rename example database to the standard name
+  Rename "$INSTDIR\data\iso42001_example.db" "$INSTDIR\data\iso42001.db"
   
   ; Configuration files
   SetOutPath "$INSTDIR"

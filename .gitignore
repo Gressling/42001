@@ -200,6 +200,8 @@ installer/
 portable/
 
 # Database files (user data)
-data/*.db
+data/iso42001.db
 data/*.db-*
+# Keep example database for distribution
+!data/iso42001_example.db
 *.exe
