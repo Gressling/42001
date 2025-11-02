@@ -2,6 +2,8 @@
 
 Enterprise-grade web application for ISO 42001 AI Management System compliance and bookkeeping. Built with Python Dash framework and SQLite database for comprehensive AI lifecycle management and regulatory compliance tracking.
 
+<img width="768" height="441" alt="image" src="https://github.com/user-attachments/assets/2fbb1bc4-4c96-447f-8796-37387d916b45" />
+
 ## Features
 
 - **Asset Management**: Comprehensive tracking of AI assets, systems, and their operational properties
@@ -10,6 +12,8 @@ Enterprise-grade web application for ISO 42001 AI Management System compliance a
 - **Incident Management**: Detailed logging and tracking of AI-related incidents and responses
 - **Compliance Monitoring**: Audit trail maintenance and compliance status reporting
 - **Data Administration**: Database export/import functionality for backup and migration operations
+
+<img width="768" height="434" alt="image" src="https://github.com/user-attachments/assets/c4ca969d-9ede-4e56-a2cc-11baa14ac0af" />
 
 ## Installation
 
