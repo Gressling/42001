@@ -1,7 +1,7 @@
 END USER LICENSE AGREEMENT (EULA)
 ISO 42001 AI Management System
 
-Copyright © 2025 Gressling Consulting GmbH & Paramus Transform LLC
+Copyright (c) 2025 Gressling Consulting GmbH (E.U.) & Paramus Transform LLC (U.S.)
 
 ================================================================================
 
@@ -38,15 +38,15 @@ This Software is licensed under the Creative Commons Attribution-NonCommercial-
 ShareAlike 4.0 International License (CC BY-NC-SA 4.0).
 
 You are free to:
-* Share - copy and redistribute the material in any medium or format
-* Adapt - remix, transform, and build upon the material
+- Share - copy and redistribute the material in any medium or format
+- Adapt - remix, transform, and build upon the material
 
 Under the following terms:
-* Attribution - You must give appropriate credit, provide a link to the license,
+- Attribution - You must give appropriate credit, provide a link to the license,
   and indicate if changes were made. You may do so in any reasonable manner, but
   not in any way that suggests the licensor endorses you or your use.
-* NonCommercial - You may not use the material for commercial purposes.
-* ShareAlike - If you remix, transform, or build upon the material, you must 
+- NonCommercial - You may not use the material for commercial purposes.
+- ShareAlike - If you remix, transform, or build upon the material, you must 
   distribute your contributions under the same license as the original.
 
 Full license text: https://creativecommons.org/licenses/by-nc-sa/4.0/
@@ -56,23 +56,23 @@ Full license text: https://creativecommons.org/licenses/by-nc-sa/4.0/
 3. PERMITTED USES
 
 You may:
-• Install and use the Software for internal business purposes
-• Make backup copies for archival purposes
-• Use the Software for ISO 42001 compliance and AI management activities
-• Modify the Software in accordance with the Creative Commons license terms
-• Distribute modified versions under the same license terms
+- Install and use the Software for internal business purposes
+- Make backup copies for archival purposes
+- Use the Software for ISO 42001 compliance and AI management activities
+- Modify the Software in accordance with the Creative Commons license terms
+- Distribute modified versions under the same license terms
 
 ================================================================================
 
 4. RESTRICTIONS
 
 You may NOT:
-• Use the Software for commercial purposes without explicit written permission
-• Remove or alter any copyright, trademark, or license notices
-• Reverse engineer, decompile, or disassemble the Software except as permitted 
+- Use the Software for commercial purposes without explicit written permission
+- Remove or alter any copyright, trademark, or license notices
+- Reverse engineer, decompile, or disassemble the Software except as permitted 
   by applicable law
-• Distribute the Software without proper attribution
-• Use the Software in violation of applicable laws or regulations
+- Distribute the Software without proper attribution
+- Use the Software in violation of applicable laws or regulations
 
 ================================================================================
 
@@ -83,10 +83,10 @@ OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
 
 GRESSLING CONSULTING GMBH AND PARAMUS TRANSFORM LLC DO NOT WARRANT THAT:
-• The Software will meet your specific requirements
-• The operation of the Software will be uninterrupted or error-free
-• All errors in the Software will be corrected
-• The Software will be compatible with all hardware and software configurations
+- The Software will meet your specific requirements
+- The operation of the Software will be uninterrupted or error-free
+- All errors in the Software will be corrected
+- The Software will be compatible with all hardware and software configurations
 
 ================================================================================
 
@@ -105,10 +105,10 @@ CONSEQUENTIAL OR INCIDENTAL DAMAGES, SO THE ABOVE LIMITATION MAY NOT APPLY TO YO
 
 7. DATA AND PRIVACY
 
-• The Software processes data locally on your system
-• No data is transmitted to external servers without your explicit consent
-• You are responsible for the security and backup of your data
-• The Software may create local database files for data storage
+- The Software processes data locally on your system
+- No data is transmitted to external servers without your explicit consent
+- You are responsible for the security and backup of your data
+- The Software may create local database files for data storage
 
 ================================================================================
 

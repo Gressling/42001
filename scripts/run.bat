@@ -48,6 +48,7 @@ echo Press Ctrl+C to stop the application
 echo.
 
 cd /d "%PROJECT_ROOT%"
+set ISO42001_DEBUG=false
 python main.py
 
 echo.

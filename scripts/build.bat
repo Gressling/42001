@@ -70,6 +70,9 @@ echo Building Windows installer...
 call :check_nsis || exit /b 1
 call :check_exe || call :build_exe || exit /b 1
 
+echo Updating version in installer script...
+for /f "delims=" %%i in ('python scripts\update_nsis_version.py') do set APP_VERSION=%%i
+
 echo Creating example database for distribution...
 python scripts\create_example_db.py
 
@@ -80,7 +83,7 @@ if errorlevel 1 (
     echo ERROR: Installer build failed!
     exit /b 1
 )
-echo Installer: installer\ISO42001-AIManagementSystem-Setup-v1.0.0.exe
+echo Installer: installer\ISO42001-AIManagementSystem-Setup-v%APP_VERSION%.exe
 goto :end
 
 :build_portable

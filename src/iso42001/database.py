@@ -18,9 +18,10 @@ class ISO42001Database:
         
         # Check if running in PyInstaller bundle
         if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-            # Running in PyInstaller bundle - use current working directory
-            app_dir = os.getcwd()
-            db_path = os.path.join(app_dir, "iso42001.db")
+            # Running in PyInstaller bundle - use directory where executable is located
+            app_dir = os.path.dirname(sys.executable)
+            data_dir = os.path.join(app_dir, "data")
+            db_path = os.path.join(data_dir, "iso42001.db")
         else:
             # Running normally - use data directory relative to package root
             package_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))

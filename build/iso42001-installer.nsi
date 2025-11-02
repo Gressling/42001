@@ -2,7 +2,7 @@
 ; Copyright (c) 2025 Gressling Consulting GmbH, Germany E.U.
 
 !define PRODUCT_NAME "ISO 42001 AI Management System"
-!define PRODUCT_VERSION "1.0.0"
+!define PRODUCT_VERSION "1.1.0"
 !define PRODUCT_PUBLISHER "Gressling Consulting GmbH"
 !define PRODUCT_WEB_SITE "https://github.com/Gressling/42001"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\ISO42001-AIManagementSystem.exe"
@@ -14,7 +14,7 @@
 
 ; MUI Settings
 !define MUI_ABORTWARNING
-!define MUI_ICON "..\build\iso42001\icon\icon.ico"
+!define MUI_ICON "..\src\iso42001\assets\favicon.ico"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
 
 ; Welcome page
@@ -51,7 +51,7 @@ VIAddVersionKey "ProductName" "${PRODUCT_NAME}"
 VIAddVersionKey "Comments" "Enterprise ISO 42001 AI Management System"
 VIAddVersionKey "CompanyName" "${PRODUCT_PUBLISHER}"
 VIAddVersionKey "LegalTrademarks" "Licensed under CC BY-NC-SA 4.0"
-VIAddVersionKey "LegalCopyright" "© 2025 Gressling Consulting GmbH & Paramus Transform LLC"
+VIAddVersionKey "LegalCopyright" "Copyright (c) 2025 Gressling Consulting GmbH & Paramus Transform LLC"
 VIAddVersionKey "FileDescription" "${PRODUCT_NAME} Installer"
 VIAddVersionKey "FileVersion" "${PRODUCT_VERSION}"
 VIAddVersionKey "ProductVersion" "${PRODUCT_VERSION}"
@@ -83,6 +83,8 @@ Section "MainSection" SEC01
   
   ; Data folder with example database
   SetOutPath "$INSTDIR\data"
+  ; Create data directory if it doesn't exist
+  CreateDirectory "$INSTDIR\data"
   File "..\data\iso42001_example.db"
   ; Rename example database to the standard name
   Rename "$INSTDIR\data\iso42001_example.db" "$INSTDIR\data\iso42001.db"
