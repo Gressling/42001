@@ -13,7 +13,19 @@ Enterprise-grade web application for ISO 42001 AI Management System compliance a
 
 ## Installation
 
-### Option 1: Automated Deployment (Recommended)
+### Option 1: Windows Executable (Standalone)
+Download the pre-built Windows installer for immediate deployment without Python installation:
+
+**Download**: [ISO 42001 Management Tool - Windows Installer](https://gressling.com/42001-management-tool/)
+
+The Windows executable provides:
+- Zero-configuration deployment - no Python or dependencies required
+- Professional installer with sample database included
+- Single-click installation and launch
+- Automatic browser opening and port detection
+- Complete offline functionality
+
+### Option 2: Developer / Python Deployment
 The deployment script automatically provisions and manages the Python virtual environment:
 
 ```bash
@@ -29,7 +41,7 @@ The automated deployment process:
 - Installs all required dependencies within isolated environment
 - Launches application with proper environment activation
 
-### Option 2: Manual Environment Configuration
+### Option 3: Manual Environment Configuration
 1. Virtual environment creation and activation:
 ```bash
 # Create virtual environment
@@ -55,7 +67,7 @@ python main.py
 
 4. Access web interface at `http://127.0.0.1:8050`
 
-### Option 3: Development Environment Setup
+### Option 4: Development Environment Setup
 ```bash
 # Install package in development mode with editable installation
 pip install -e .
